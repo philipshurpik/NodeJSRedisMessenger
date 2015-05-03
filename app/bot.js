@@ -18,13 +18,14 @@ function Bot() {
 Bot.prototype.addInitKeyInRedis = function() {
     client.rpush(Enum.RedisKeys.CLIENTS_LIST, Date.now(), function(err, index) {
         setExpireTime(Enum.RedisKeys.CLIENTS_LIST, Enum.Timeout.EXPIRE);
+        this.id = global.process.pid + '-' + index + '-' + Date.now();
         this.status = index === 1 ? this.initGenerator() : this.initReceiver();
-        LogMe.log('pid: ' + global.process.pid + '-' + index + '-' + Date.now() + ': ' + this.status);
+        LogMe.log('Started: ' + this.id + ': ' + this.status);
     }.bind(this));
 };
 
 Bot.prototype.initGenerator = function() {
-    this.generator.start();
+    this.generator.start(this.id, client);
     this.intervalKey = setInterval(function() {
         setExpireTime(Enum.RedisKeys.CLIENTS_LIST, Enum.Timeout.EXPIRE);
     }, Enum.Timeout.CHECK);
@@ -32,7 +33,7 @@ Bot.prototype.initGenerator = function() {
 };
 
 Bot.prototype.initReceiver = function() {
-    this.receiver.start();
+    this.receiver.start(this.id, client);
     this.intervalKey = setInterval(function() {
         client.exists(Enum.RedisKeys.CLIENTS_LIST, function(err, isGeneratorExists) {
             if (!isGeneratorExists) {

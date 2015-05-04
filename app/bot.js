@@ -9,9 +9,10 @@ client.on("error", function (err) {
     LogMe.error("Error: " + err);
 });
 
-function Bot() {
-    this.generator = new Generator();
-    this.receiver = new Receiver();
+function Bot(options) {
+    this.options = options;
+    this.generator = new Generator(options);
+    this.receiver = new Receiver(options);
     this.addInitKeyInRedis();
 }
 

@@ -16,6 +16,6 @@ module.exports = {
         EXPIRE: 1500,
         CHECK: 500,
         CHECK_ACTIVE: 10000,
-        GENERATE: 0
+        GENERATE: 500
     }
 };

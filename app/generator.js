@@ -6,7 +6,8 @@ var subscribeClient = redis.createClient();
 var messagesCount = 0;
 var intervalKey;
 
-function Generator() {
+function Generator(options) {
+    this.options = options;
     getMessage = getMessage.bind(this);
 }
 
@@ -14,7 +15,7 @@ Generator.prototype.start = function(id) {
     this.id = id;
     this.active = true;
     messagesCount = 0;
-    //startGeneration.call(this);
+    startGeneration.call(this);
     //checkActiveClients(this.id);
 };
 
@@ -26,14 +27,16 @@ Generator.prototype.finish = function() {
 };
 
 function startGeneration() {
-    sendMessage();
-    intervalKey = setInterval(function() {
+    function onSetInterval() {
         sendMessage();
-        if (messagesCount > 1000000) {
+        if (this.options.force && messagesCount > 10000) {
             clearInterval(intervalKey);
-
         }
-    }, Enum.Timeout.GENERATE);
+    }
+
+    sendMessage();
+    var interval = this.options.force ? 0 : Enum.Timeout.GENERATE;
+    intervalKey = setInterval(onSetInterval.bind(this), interval);
 }
 
 function sendMessage() {

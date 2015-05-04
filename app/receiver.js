@@ -1,7 +1,7 @@
 var Enum = require('./enum');
-var LogMe = require('./util/logMe');
 var redis = require('redis');
 var client = redis.createClient();
+var subscribeClient = redis.createClient();
 
 function Receiver() {
     this.active = false;
@@ -29,10 +29,10 @@ function eventHandler(msg, error) {
 }
 
 function subscribeOnMessages(id) {
-    client.subscribe('clients');
-    client.on('message', function (channel, message) {
-        if (channel === Enum.RedisKeys.PUBSUB_CHANNEL) {
-            LogMe.log("Receiver: " + id);
+    subscribeClient.subscribe(Enum.PubSub.CHANNEL_CHECK);
+    subscribeClient.on('message', function (channel, message) {
+        if (channel === Enum.PubSub.CHANNEL_CHECK) {
+            client.publish(Enum.PubSub.CHANNEL_RECEIVERS, "Receiver: " + id);
         }
     });
 }

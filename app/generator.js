@@ -2,6 +2,7 @@ var Enum = require('./enum');
 var LogMe = require('./util/logMe');
 var redis = require('redis');
 var client = redis.createClient();
+var subscribeClient = redis.createClient();
 
 function Generator() {}
 
@@ -28,8 +29,14 @@ function checkActiveClients(id) {
     setInterval(function() {
         LogMe.log("*** Date: " + (new Date()).toLocaleString() + "***");
         LogMe.log("Generator: " + id);
-        client.publish(Enum.RedisKeys.PUBSUB_CHANNEL, 'check');
+        client.publish(Enum.PubSub.CHANNEL_CHECK, "check");
     }, Enum.Timeout.CHECK_ACTIVE);
+    subscribeClient.subscribe(Enum.PubSub.CHANNEL_RECEIVERS);
+    subscribeClient.on('message', function (channel, message) {
+        if (channel === Enum.PubSub.CHANNEL_RECEIVERS) {
+            LogMe.log(message);
+        }
+    });
 }
 
 module.exports = Generator;

@@ -7,6 +7,10 @@ module.exports = {
         CLIENTS_LIST: "clientsList",
         PUBSUB_CHANNEL: "clients"
     },
+    PubSub: {
+        CHANNEL_CHECK: "clients",
+        CHANNEL_RECEIVERS: "receivers"
+    },
     Timeout: {
         EXPIRE: 1500,
         CHECK: 500,

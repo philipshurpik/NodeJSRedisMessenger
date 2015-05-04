@@ -3,22 +3,46 @@ var LogMe = require('./util/logMe');
 var redis = require('redis');
 var client = redis.createClient();
 var subscribeClient = redis.createClient();
+var messagesCount = 0;
+var intervalKey;
 
-function Generator() {}
+function Generator() {
+    getMessage = getMessage.bind(this);
+}
 
 Generator.prototype.start = function(id) {
     this.id = id;
     this.active = true;
-    var message = getMessage.call(this);
-    //console.log(message);
-    checkActiveClients(this.id);
+    messagesCount = 0;
+    //startGeneration.call(this);
+    //checkActiveClients(this.id);
 };
 
 Generator.prototype.finish = function() {
     if (this.active) {
         this.active = false;
+        clearInterval(intervalKey);
     }
 };
+
+function startGeneration() {
+    sendMessage();
+    intervalKey = setInterval(function() {
+        sendMessage();
+        if (messagesCount > 1000000) {
+            clearInterval(intervalKey);
+
+        }
+    }, Enum.Timeout.GENERATE);
+}
+
+function sendMessage() {
+    var message = getMessage();
+    console.log("message generated:" + message);
+    client.rpush(Enum.RedisKeys.MESSAGES_LIST, message, function(err, index) {
+        messagesCount++;
+    });
+}
 
 function getMessage() {
     this.cnt = this.cnt || 0;

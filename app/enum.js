@@ -5,7 +5,8 @@ module.exports = {
     },
     RedisKeys: {
         CLIENTS_LIST: "clientsList",
-        PUBSUB_CHANNEL: "clients"
+        PUBSUB_CHANNEL: "clients",
+        MESSAGES_LIST: "messagesList"
     },
     PubSub: {
         CHANNEL_CHECK: "clients",
@@ -14,6 +15,7 @@ module.exports = {
     Timeout: {
         EXPIRE: 1500,
         CHECK: 500,
-        CHECK_ACTIVE: 10000
+        CHECK_ACTIVE: 10000,
+        GENERATE: 0
     }
 };

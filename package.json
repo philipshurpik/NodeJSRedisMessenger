@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "logger": "0.0.1",
+    "minimist": "^1.1.1",
     "redis": "^0.12.1"
   }
 }

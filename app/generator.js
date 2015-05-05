@@ -1,7 +1,7 @@
 var redis = require('redis');
 var Enum = require('./enum');
 var LogMe = require('./util/logMe');
-var client, subscribeClient;
+var client;
 var intervalKey;
 
 function Generator(options) {
@@ -17,7 +17,6 @@ Generator.prototype.start = function(id) {
     this.id = id;
     this.active = true;
     startGeneration.call(this);
-    //checkActiveClients(this.id);
 };
 
 Generator.prototype.finish = function() {
@@ -44,7 +43,7 @@ function sendMessage() {
     var message = getMessage();
     client.rpush(Enum.RedisKeys.MESSAGES_LIST, message, function(err, index) {
         if (err) {
-            LogMe.error("Generation error: " + err + " \nMessages in list: " + index);
+            LogMe.error("Generation error: " + err);
         }
         LogMe.log("Message generated: " + message + "  |  Messages in list: " + index);
     });
@@ -53,20 +52,6 @@ function sendMessage() {
 function getMessage() {
     this.cnt = this.cnt || 0;
     return this.cnt++;
-}
-
-function checkActiveClients(id) {
-    setInterval(function() {
-        LogMe.log("*** Date: " + (new Date()).toLocaleString() + "***");
-        LogMe.log("Generator: " + id);
-        client.publish(Enum.PubSub.CHANNEL_CHECK, "check");
-    }, Enum.Timeout.CHECK_ACTIVE);
-    subscribeClient.subscribe(Enum.PubSub.CHANNEL_RECEIVERS);
-    subscribeClient.on('message', function (channel, message) {
-        if (channel === Enum.PubSub.CHANNEL_RECEIVERS) {
-            LogMe.log(message);
-        }
-    });
 }
 
 module.exports = Generator;

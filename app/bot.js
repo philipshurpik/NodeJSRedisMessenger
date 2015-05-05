@@ -17,31 +17,40 @@ function Bot(options) {
 }
 
 Bot.prototype.addInitKeyInRedis = function() {
-    client.rpush(Enum.RedisKeys.CLIENTS_LIST, Date.now(), function(err, index) {
+    function onComplete(err, index) {
+        if (err) {
+            LogMe.error("AddInitKeyInRedis error: " + err);
+        }
         setExpireTime(Enum.RedisKeys.CLIENTS_LIST, Enum.Timeout.EXPIRE);
         this.id = global.process.pid + '-' + index + '-' + Date.now();
         this.status = index === 1 ? this.initGenerator() : this.initReceiver();
         LogMe.log('Started: ' + this.id + ': ' + this.status);
-    }.bind(this));
+    }
+
+    client.rpush(Enum.RedisKeys.CLIENTS_LIST, Date.now(), onComplete.bind(this));
 };
 
 Bot.prototype.initGenerator = function() {
-    this.generator.start(this.id, client);
-    this.intervalKey = setInterval(function() {
+    function updateGeneratorIsActive() {
         setExpireTime(Enum.RedisKeys.CLIENTS_LIST, Enum.Timeout.EXPIRE);
-    }, Enum.Timeout.CHECK);
+    }
+
+    this.generator.start(this.id, client);
+    this.intervalKey = setInterval(updateGeneratorIsActive, Enum.Timeout.CHECK);
     return Enum.Status.GENERATOR;
 };
 
 Bot.prototype.initReceiver = function() {
-    this.receiver.start(this.id, client);
-    this.intervalKey = setInterval(function() {
+    function checkIsGeneratorExists() {
         client.exists(Enum.RedisKeys.CLIENTS_LIST, function(err, isGeneratorExists) {
             if (!isGeneratorExists) {
                 this.reInitialize();
             }
         }.bind(this));
-    }.bind(this), Enum.Timeout.CHECK);
+    }
+
+    this.receiver.start(this.id, client);
+    this.intervalKey = setInterval(checkIsGeneratorExists.bind(this), Enum.Timeout.CHECK);
     return Enum.Status.RECEIVER;
 };
 

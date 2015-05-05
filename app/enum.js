@@ -6,7 +6,8 @@ module.exports = {
     RedisKeys: {
         CLIENTS_LIST: "clientsList",
         PUBSUB_CHANNEL: "clients",
-        MESSAGES_LIST: "messagesList"
+        MESSAGES_LIST: "messagesList",
+        ERRORS_LIST: "errorsList"
     },
     PubSub: {
         CHANNEL_CHECK: "clients",

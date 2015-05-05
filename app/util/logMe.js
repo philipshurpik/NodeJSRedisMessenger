@@ -3,7 +3,7 @@ var defaultLogFile = 'app.log';
 var defaultErrorLogFile = 'app-error.log';
 var logger = Logger.createLogger(defaultLogFile);
 var errorLogger = Logger.createLogger(defaultErrorLogFile);
-var debug = true;
+var debug = false;
 
 module.exports = {
     init: function(options) {

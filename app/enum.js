@@ -17,5 +17,10 @@ module.exports = {
         CHECK: 500,
         CHECK_ACTIVE: 10000,
         GENERATE: 500
+    },
+    Force: {
+        BOTS: 100,
+        GEN_TIMEOUT: 0,
+        MAX_COUNT: 1000000
     }
 };

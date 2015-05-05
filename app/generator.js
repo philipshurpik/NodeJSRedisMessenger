@@ -30,13 +30,13 @@ Generator.prototype.finish = function() {
 function startGeneration() {
     function onSetInterval() {
         sendMessage();
-        if (this.options.force && this.cnt > 10000) {
+        if (this.options.force && this.cnt > Enum.Force.MAX_COUNT) {
             clearInterval(intervalKey);
         }
     }
 
     sendMessage();
-    var interval = this.options.force ? 0 : Enum.Timeout.GENERATE;
+    var interval = this.options.force ? Enum.Force.GEN_TIMEOUT : Enum.Timeout.GENERATE;
     intervalKey = setInterval(onSetInterval.bind(this), interval);
 }
 
@@ -44,7 +44,7 @@ function sendMessage() {
     var message = getMessage();
     client.rpush(Enum.RedisKeys.MESSAGES_LIST, message, function(err, index) {
         if (err) {
-            LogMe.error("Generation error: " + err + " \nmessages in list: " + index);
+            LogMe.error("Generation error: " + err + " \nMessages in list: " + index);
         }
         LogMe.log("Message generated: " + message + "  |  Messages in list: " + index);
     });

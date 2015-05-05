@@ -1,9 +1,14 @@
-var Enum = require('./enum');
 var redis = require('redis');
-var client = redis.createClient();
-var subscribeClient = redis.createClient();
+var Enum = require('./enum');
+var LogMe = require('./util/logMe');
+var client, subscribeClient;
 
-function Receiver() {}
+function Receiver() {
+    client = redis.createClient();
+    client.on("error", function (err) {
+        LogMe.error("Error: " + err);
+    });
+}
 
 Receiver.prototype.start = function(_id) {
     this.id = _id;
@@ -23,18 +28,18 @@ function startReceiver() {
     var self = this;
     function onReceiveResult(error, msg) {
         if (error) {
-            console.log(self.id + " - error: " + msg);
+            LogMe.log(self.id + " - error: " + msg);
         }
         else {
             self.messagesCount++;
-            console.log(self.id + " - message: " + msg);
+            LogMe.log(self.id + " - message: " + msg);
         }
         startReceiver.call(self);
     }
 
     client.blpop(Enum.RedisKeys.MESSAGES_LIST, 0, function(err, data) {
         if (err) {
-            console.log("Error: " + err + " id: " + self.id);
+            LogMe.error("Error: " + err + " id: " + self.id);
             setTimeout(startReceiver, Enum.Timeout.CHECK);
         }
         if (data.length > 1) {

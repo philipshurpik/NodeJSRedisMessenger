@@ -1,12 +1,14 @@
+var redis = require('redis');
 var Enum = require('./enum');
 var LogMe = require('./util/logMe');
-var redis = require('redis');
-var client = redis.createClient();
-var subscribeClient = redis.createClient();
-var messagesCount = 0;
+var client, subscribeClient;
 var intervalKey;
 
 function Generator(options) {
+    client = redis.createClient();
+    client.on("error", function (err) {
+        LogMe.error("Error: " + err);
+    });
     this.options = options;
     getMessage = getMessage.bind(this);
 }
@@ -14,7 +16,6 @@ function Generator(options) {
 Generator.prototype.start = function(id) {
     this.id = id;
     this.active = true;
-    messagesCount = 0;
     startGeneration.call(this);
     //checkActiveClients(this.id);
 };
@@ -29,7 +30,7 @@ Generator.prototype.finish = function() {
 function startGeneration() {
     function onSetInterval() {
         sendMessage();
-        if (this.options.force && messagesCount > 10000) {
+        if (this.options.force && this.cnt > 10000) {
             clearInterval(intervalKey);
         }
     }
@@ -41,9 +42,11 @@ function startGeneration() {
 
 function sendMessage() {
     var message = getMessage();
-    console.log("message generated:" + message);
     client.rpush(Enum.RedisKeys.MESSAGES_LIST, message, function(err, index) {
-        messagesCount++;
+        if (err) {
+            LogMe.error("Generation error: " + err + " \nmessages in list: " + index);
+        }
+        LogMe.log("Message generated: " + message + "  |  Messages in list: " + index);
     });
 }
 

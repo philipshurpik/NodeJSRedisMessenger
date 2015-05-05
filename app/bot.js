@@ -3,13 +3,13 @@ var Enum = require('./enum');
 var LogMe = require('./util/logMe');
 var Generator = require('./generator');
 var Receiver = require('./receiver');
-var client = redis.createClient();
-
-client.on("error", function (err) {
-    LogMe.error("Error: " + err);
-});
+var client;
 
 function Bot(options) {
+    client = redis.createClient();
+    client.on("error", function (err) {
+        LogMe.error("Error: " + err);
+    });
     this.options = options;
     this.generator = new Generator(options);
     this.receiver = new Receiver(options);
